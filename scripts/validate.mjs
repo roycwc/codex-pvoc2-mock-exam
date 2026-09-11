@@ -3,11 +3,17 @@ import {readFileSync,existsSync,readdirSync,statSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {QUESTIONS,CATEGORIES,SOURCES} from '../dist/questions.js';
+import {DIAGRAMS} from '../dist/diagrams.js';
 
-assert.equal(QUESTIONS.length,180,'Expected 180 reviewed questions');
+assert.equal(QUESTIONS.length,360,'Expected 360 reviewed questions');
 assert.equal(new Set(QUESTIONS.map(q=>q.id)).size,QUESTIONS.length,'Duplicate IDs');
 assert.equal(new Set(QUESTIONS.map(q=>q.stem)).size,QUESTIONS.length,'Duplicate questions');
+for(const part of ['A','B']) assert.equal(QUESTIONS.filter(q=>q.part===part).length,180);
+for(const c of CATEGORIES) assert(QUESTIONS.some(q=>q.category===c.id),c.id+' empty topic');
+for(const id of Object.keys(DIAGRAMS)) assert(QUESTIONS.some(q=>q.id===id),id+' missing diagram question');
 for(const q of QUESTIONS){
+  assert(q.id.startsWith(q.part),q.id+' part');
+  assert(CATEGORIES.some(c=>c.id===q.category&&c.part===q.part),q.id+' part/category mismatch');
   assert(CATEGORIES.some(c=>c.id===q.category),q.id+' category');
   assert.equal(q.options.length,4,q.id+' options');
   assert.equal(new Set(q.options).size,4,q.id+' duplicate options');
